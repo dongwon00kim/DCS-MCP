@@ -1,0 +1,3 @@
+[submodule "dcs-bios"]
+	path = dcs-bios
+	url = https://github.com/DCS-Skunkworks/dcs-bios.git
