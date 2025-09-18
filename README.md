@@ -10,7 +10,7 @@ DCS World의 DCS-BIOS를 활용하여 항공기 정보를 실시간으로 수집
 
 ```bash
 # 1. 저장소 클론
-git clone https://github.com/your-username/dcs-mcp-server.git
+git clone --recursive https://github.com/dongwon00kim/DCS-MCP.git
 cd dcs-mcp-server
 
 # 2. uv로 환경 설정 (Python 3.10+ 필요)
@@ -71,7 +71,7 @@ dcs-mcp/
 
 ### 1. 저장소 클론
 ```bash
-git clone https://github.com/your-username/dcs-mcp-server.git
+git clone --recursive https://github.com/dongwon00kim/DCS-MCP.git
 cd dcs-mcp-server
 ```
 
@@ -145,6 +145,13 @@ python src/run_server.py --mode api
 # config 파일에 서버 정보 추가
 ```
 
+### 웹 모니터링 대시보드
+브라우저에서 `http://localhost:8080/static/index.html` 접속:
+- 실시간 항공기 상태 모니터링
+- UDP/TCP 연결 상태 표시
+- WebSocket 기반 실시간 데이터 업데이트
+- 엔진, 항법, 경고 시스템 정보 표시
+
 ### API 엔드포인트 예시
 ```bash
 # 현재 항공기 정보 조회
@@ -155,6 +162,12 @@ curl http://localhost:8080/api/aircraft/systems/engine
 
 # 무기 시스템 정보 조회
 curl http://localhost:8080/api/aircraft/weapons
+
+# 연결 상태 확인
+curl http://localhost:8080/api/connection-status
+
+# 항공기 타입 설정
+curl -X POST http://localhost:8080/api/aircraft/type/FA-18C_hornet
 ```
 
 ## 📊 지원되는 데이터 타입
@@ -226,7 +239,7 @@ curl http://localhost:8080/api/aircraft/weapons
 - `get_system_data`: 특정 시스템 데이터 조회
 - `set_control`: 항공기 제어 실행
 - `push_button`: 버튼 제어
-- `set_switch`: 스위치 제어  
+- `set_switch`: 스위치 제어
 - `monitor_changes`: 실시간 변화 모니터링
 - `set_aircraft_type`: 항공기 타입 설정
 
@@ -270,6 +283,14 @@ ruff check --fix src/
 # MyPy로 타입 체킹
 mypy src/
 ```
+
+### 프로젝트 상태
+- ✅ MCP stdio 서버 구현 완료
+- ✅ REST API 서버 구현 완료
+- ✅ WebSocket 실시간 스트리밍 구현
+- ✅ 웹 모니터링 대시보드 구현
+- ✅ 테스트 스위트 구현 (58개 테스트, 41% 커버리지)
+- ⏳ Windows 설치 프로그램 (예정)
 
 ### 테스트
 
@@ -340,17 +361,22 @@ python -m pytest tests/integration/
 
 ## 📋 로드맵
 
+- [x] MCP stdio 서버 구현
+- [x] REST API 디버그 서버
+- [x] 웹 기반 모니터링 대시보드
+- [x] WebSocket 실시간 스트리밍
 - [ ] 추가 항공기 모듈 지원 (F-14, AH-64D)
-- [ ] 웹 기반 모니터링 대시보드
 - [ ] 데이터 기록 및 재생 기능
+- [ ] Windows 설치 프로그램
 - [ ] 클러스터 모드 지원
 - [ ] 성능 최적화
 
 ## ⚠️ 알려진 이슈
 
-- DCS World 업데이트 시 dcs-mcp 호환성 확인 필요
+- DCS World 업데이트 시 DCS-BIOS 호환성 확인 필요
 - 일부 항공기에서 특정 데이터 포인트 누락 가능
 - 고해상도 모니터링 시 CPU 사용량 증가
+- Windows에서 가상환경 활성화 시 스크립트 실행 정책 설정 필요
 
 ## 📄 라이선스
 
@@ -358,14 +384,15 @@ python -m pytest tests/integration/
 
 ## 🙏 감사의 말
 
-- [dcs-mcp](https://github.com/dcs-mcp/dcs-mcp) 개발팀
+- [DCS-BIOS](https://github.com/DCS-BIOS/dcs-bios) 개발팀
 - DCS World 커뮤니티
-- MCP 프로토콜 개발팀
+- [Anthropic MCP](https://github.com/anthropics/mcp) 프로토콜 개발팀
+- Claude Desktop 팀
 
 ## 📞 연락처 및 지원
 
-- **이슈 트래커**: [GitHub Issues](https://github.com/your-username/dcs-mcp-server/issues)
-- **이메일**: your-email@example.com
+- **이슈 트래커**: [GitHub Issues](https://github.com/dongwon00kim/DCS-MCP/issues)
+- **GitHub**: [https://github.com/dongwon00kim/DCS-MCP](https://github.com/dongwon00kim/DCS-MCP)
 - **디스코드**: DCS 한국 커뮤니티
 
 ---
