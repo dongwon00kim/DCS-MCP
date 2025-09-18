@@ -218,12 +218,12 @@ class TestDCSBIOSSender:
             await sender.connect()
             
             # Mock reconnect task
-            with patch.object(sender, '_schedule_reconnect'):
+            with patch.object(sender, '_schedule_reconnect') as mock_schedule:
                 result = await sender.send_command(0x1234, 0x5678)
-            
-            assert result is False
-            assert sender.connected is False
-            sender._schedule_reconnect.assert_called()
+                
+                assert result is False
+                assert sender.connected is False
+                mock_schedule.assert_called()
     
     @pytest.mark.asyncio
     async def test_auto_reconnect(self, mock_reader_writer):

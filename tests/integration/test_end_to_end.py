@@ -7,7 +7,7 @@ import asyncio
 import socket
 import struct
 import time
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch, AsyncMock, Mock
 
 import pytest
 
@@ -79,22 +79,25 @@ class TestEndToEnd:
             writer = AsyncMock()
             mock_connect.return_value = (reader, writer)
             
-            # Connect and send commands
-            await sender.connect()
-            
             # Test various control types
             commands_sent = []
             
-            # Capture writes
-            def capture_write(data):
-                commands_sent.append(data)
+            # Capture writes through Mock
+            writer.write = Mock(side_effect=lambda data: commands_sent.append(data))
+            writer.drain = AsyncMock()
             
-            writer.write.side_effect = capture_write
+            # Connect and send commands
+            await sender.connect()
             
             # Send different command types
-            await sender.set_switch(0x1000, 1)
-            await sender.set_rotary(0x2000, 32768)
-            await sender.push_button(0x3000)
+            result1 = await sender.set_switch(0x1000, 1)
+            result2 = await sender.set_rotary(0x2000, 32768)
+            result3 = await sender.push_button(0x3000)
+            
+            print(f"Results: {result1}, {result2}, {result3}")
+            print(f"Commands sent: {commands_sent}")
+            print(f"Writer.write called: {writer.write.called}")
+            print(f"Writer.write call count: {writer.write.call_count}")
             
             # Verify commands were sent
             assert len(commands_sent) >= 3

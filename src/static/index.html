@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCS-BIOS MCP Server Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card h2 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            color: #ffd700;
+        }
+        
+        .status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .status:last-child {
+            border-bottom: none;
+        }
+        
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .indicator.online {
+            background: #4caf50;
+            box-shadow: 0 0 10px #4caf50;
+        }
+        
+        .indicator.offline {
+            background: #f44336;
+            box-shadow: 0 0 10px #f44336;
+        }
+        
+        .data-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .timestamp {
+            color: #aaa;
+            font-size: 0.8em;
+        }
+        
+        .value {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .updating {
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✈️ DCS-BIOS MCP Server Monitor</h1>
+        
+        <div class="dashboard">
+            <div class="card">
+                <h2>연결 상태</h2>
+                <div class="status">
+                    <span>UDP Receiver</span>
+                    <span class="indicator offline" id="receiver-status"></span>
+                </div>
+                <div class="status">
+                    <span>TCP Sender</span>
+                    <span class="indicator offline" id="sender-status"></span>
+                </div>
+                <div class="status">
+                    <span>WebSocket</span>
+                    <span class="indicator offline" id="ws-status"></span>
+                </div>
+                <div class="status">
+                    <span>메시지 수신</span>
+                    <span class="value" id="msg-count">0</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>항공기 정보</h2>
+                <div class="status">
+                    <span>기종</span>
+                    <span class="value" id="aircraft-type">Unknown</span>
+                </div>
+                <div class="status">
+                    <span>고도</span>
+                    <span class="value" id="altitude">0 ft</span>
+                </div>
+                <div class="status">
+                    <span>속도</span>
+                    <span class="value" id="speed">0 kts</span>
+                </div>
+                <div class="status">
+                    <span>방향</span>
+                    <span class="value" id="heading">0°</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>엔진 상태</h2>
+                <div class="status">
+                    <span>Left RPM</span>
+                    <span class="value" id="rpm-left">0%</span>
+                </div>
+                <div class="status">
+                    <span>Right RPM</span>
+                    <span class="value" id="rpm-right">0%</span>
+                </div>
+                <div class="status">
+                    <span>연료량</span>
+                    <span class="value" id="fuel">0 lbs</span>
+                </div>
+                <div class="status">
+                    <span>Master Caution</span>
+                    <span class="indicator offline" id="master-caution"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>실시간 데이터 로그</h2>
+            <div class="data-display" id="log-display">
+                <div class="log-entry">웹소켓 연결 대기중...</div>
+            </div>
+            <div class="controls">
+                <button onclick="connectWebSocket()">연결</button>
+                <button onclick="clearLog()">로그 삭제</button>
+                <button onclick="getState()">상태 조회</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let ws = null;
+        let messageCount = 0;
+        
+        function connectWebSocket() {
+            if (ws) {
+                ws.close();
+            }
+            
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.hostname}:8080/ws`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                document.getElementById('ws-status').classList.remove('offline');
+                document.getElementById('ws-status').classList.add('online');
+                addLog('WebSocket 연결됨');
+                
+                // Get initial state
+                ws.send('get_state');
+            };
+            
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleMessage(data);
+                } catch (e) {
+                    console.error('Parse error:', e);
+                }
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                addLog('WebSocket 오류 발생');
+            };
+            
+            ws.onclose = () => {
+                document.getElementById('ws-status').classList.remove('online');
+                document.getElementById('ws-status').classList.add('offline');
+                addLog('WebSocket 연결 종료');
+            };
+        }
+        
+        function handleMessage(data) {
+            messageCount++;
+            document.getElementById('msg-count').textContent = messageCount;
+            
+            if (data.type === 'state') {
+                updateState(data.data);
+            } else if (data.type === 'update') {
+                updateValue(data.data);
+            }
+        }
+        
+        function updateState(state) {
+            if (state.aircraft) {
+                document.getElementById('aircraft-type').textContent = state.aircraft.type || 'Unknown';
+                
+                if (state.aircraft.systems) {
+                    const systems = state.aircraft.systems;
+                    
+                    // Update instruments
+                    if (systems.instruments) {
+                        if (systems.instruments.ALTITUDE !== undefined) {
+                            document.getElementById('altitude').textContent = `${systems.instruments.ALTITUDE} ft`;
+                        }
+                        if (systems.instruments.IAS !== undefined) {
+                            document.getElementById('speed').textContent = `${systems.instruments.IAS} kts`;
+                        }
+                    }
+                    
+                    // Update navigation
+                    if (systems.navigation && systems.navigation.HEADING !== undefined) {
+                        document.getElementById('heading').textContent = `${systems.navigation.HEADING}°`;
+                    }
+                    
+                    // Update engine
+                    if (systems.engine) {
+                        if (systems.engine.ENGINE_RPM_LEFT !== undefined) {
+                            document.getElementById('rpm-left').textContent = `${systems.engine.ENGINE_RPM_LEFT.toFixed(1)}%`;
+                        }
+                        if (systems.engine.ENGINE_RPM_RIGHT !== undefined) {
+                            document.getElementById('rpm-right').textContent = `${systems.engine.ENGINE_RPM_RIGHT.toFixed(1)}%`;
+                        }
+                        if (systems.engine.FUEL_QUANTITY !== undefined) {
+                            document.getElementById('fuel').textContent = `${systems.engine.FUEL_QUANTITY} lbs`;
+                        }
+                    }
+                    
+                    // Update warnings
+                    if (systems.warnings && systems.warnings.MASTER_CAUTION !== undefined) {
+                        const cautionEl = document.getElementById('master-caution');
+                        if (systems.warnings.MASTER_CAUTION) {
+                            cautionEl.classList.remove('offline');
+                            cautionEl.classList.add('online');
+                        } else {
+                            cautionEl.classList.remove('online');
+                            cautionEl.classList.add('offline');
+                        }
+                    }
+                }
+            }
+        }
+        
+        function updateValue(data) {
+            addLog(`${data.name}: ${data.value}`);
+            
+            // Update specific values based on name
+            switch(data.name) {
+                case 'IAS':
+                    document.getElementById('speed').textContent = `${data.value} kts`;
+                    break;
+                case 'ALTITUDE':
+                    document.getElementById('altitude').textContent = `${data.value} ft`;
+                    break;
+                case 'HEADING':
+                    document.getElementById('heading').textContent = `${data.value}°`;
+                    break;
+                case 'ENGINE_RPM_LEFT':
+                    document.getElementById('rpm-left').textContent = `${data.value.toFixed(1)}%`;
+                    break;
+                case 'ENGINE_RPM_RIGHT':
+                    document.getElementById('rpm-right').textContent = `${data.value.toFixed(1)}%`;
+                    break;
+                case 'FUEL_QUANTITY':
+                    document.getElementById('fuel').textContent = `${data.value} lbs`;
+                    break;
+                case 'MASTER_CAUTION':
+                    const cautionEl = document.getElementById('master-caution');
+                    if (data.value) {
+                        cautionEl.classList.remove('offline');
+                        cautionEl.classList.add('online');
+                    } else {
+                        cautionEl.classList.remove('online');
+                        cautionEl.classList.add('offline');
+                    }
+                    break;
+            }
+        }
+        
+        function addLog(message) {
+            const logDisplay = document.getElementById('log-display');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            logDisplay.appendChild(entry);
+            
+            // Keep only last 50 entries
+            while (logDisplay.children.length > 50) {
+                logDisplay.removeChild(logDisplay.firstChild);
+            }
+            
+            // Scroll to bottom
+            logDisplay.scrollTop = logDisplay.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log-display').innerHTML = '';
+            messageCount = 0;
+            document.getElementById('msg-count').textContent = '0';
+        }
+        
+        function getState() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send('get_state');
+                addLog('상태 조회 요청');
+            } else {
+                addLog('WebSocket 연결되지 않음');
+            }
+        }
+        
+        // Check API connection status
+        async function checkConnectionStatus() {
+            try {
+                const response = await fetch('http://localhost:8080/api/connection-status');
+                const status = await response.json();
+                
+                // Update receiver status
+                const receiverEl = document.getElementById('receiver-status');
+                if (status.receiver) {
+                    receiverEl.classList.remove('offline');
+                    receiverEl.classList.add('online');
+                } else {
+                    receiverEl.classList.remove('online');
+                    receiverEl.classList.add('offline');
+                }
+                
+                // Update sender status
+                const senderEl = document.getElementById('sender-status');
+                if (status.sender) {
+                    senderEl.classList.remove('offline');
+                    senderEl.classList.add('online');
+                } else {
+                    senderEl.classList.remove('online');
+                    senderEl.classList.add('offline');
+                }
+                
+            } catch (e) {
+                console.error('Failed to check connection status:', e);
+            }
+        }
+        
+        // Auto-connect on load
+        window.onload = () => {
+            setTimeout(connectWebSocket, 1000);
+            setInterval(checkConnectionStatus, 5000);
+            checkConnectionStatus();
+        };
+    </script>
+</body>
+</html>

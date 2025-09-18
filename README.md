@@ -123,8 +123,20 @@ vi config.json  # 또는 선호하는 편집기 사용
 ## 🚀 사용법
 
 ### 서버 시작
+
+#### 모든 기능 실행 (MCP + API)
 ```bash
-python src/main.py
+python src/run_server.py
+```
+
+#### MCP 서버만 실행 (Claude Desktop용)
+```bash
+python src/run_server.py --mode mcp
+```
+
+#### API 디버그 서버만 실행
+```bash
+python src/run_server.py --mode api
 ```
 
 ### MCP 클라이언트로 연결
@@ -197,9 +209,9 @@ curl http://localhost:8080/api/aircraft/weapons
 ```json
 {
   "mcpServers": {
-    "dcs-mcp": {
+    "dcs-bios": {
       "command": "python",
-      "args": ["/path/to/dcs-mcp-server/src/main.py"],
+      "args": ["/path/to/dcs-mcp-server/src/run_server.py", "--mode", "mcp"],
       "env": {
         "DCS_BIOS_HOST": "127.0.0.1",
         "DCS_BIOS_PORT": "5010"
@@ -211,10 +223,12 @@ curl http://localhost:8080/api/aircraft/weapons
 
 ### 사용 가능한 MCP 도구
 - `get_aircraft_status`: 현재 항공기의 전체 상태 정보
-- `get_engine_data`: 엔진 시스템 상세 정보
-- `get_weapons_status`: 무기 시스템 현황
-- `get_navigation_data`: 항법 시스템 정보
-- `monitor_warnings`: 경고 및 캐우션 모니터링
+- `get_system_data`: 특정 시스템 데이터 조회
+- `set_control`: 항공기 제어 실행
+- `push_button`: 버튼 제어
+- `set_switch`: 스위치 제어  
+- `monitor_changes`: 실시간 변화 모니터링
+- `set_aircraft_type`: 항공기 타입 설정
 
 ## 📚 API 문서
 

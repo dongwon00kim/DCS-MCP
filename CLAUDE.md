@@ -119,11 +119,13 @@ defineIndicatorLight("LIGHT_NAME", position_id, "Category", "Description")
 Current implementation status:
 - ✅ DCS-BIOS library included
 - ✅ Project structure defined
-- ⏳ MCP server implementation needed
-- ⏳ UDP multicast receiver needed
-- ⏳ TCP control sender needed
-- ⏳ Data parsing engine needed
-- ⏳ REST API for debugging needed
+- ✅ MCP server implementation completed
+- ✅ UDP multicast receiver implemented
+- ✅ TCP control sender implemented
+- ✅ Data parsing engine implemented
+- ✅ REST API for debugging implemented
+- ✅ WebSocket support added
+- ✅ Test suite created
 - ⏳ Windows installer needed
 
 ## File Organization

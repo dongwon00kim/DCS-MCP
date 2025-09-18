@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DCS-BIOS MCP Server
+DCS MCP Server
 Main entry point for the MCP server that bridges DCS-BIOS with LLMs
 """
 
@@ -20,20 +20,20 @@ from logging_config import setup_logging
 
 
 async def main():
-    """Main entry point for the DCS-BIOS MCP Server"""
-    
+    """Main entry point for the DCS MCP Server"""
+
     # Setup logging
     setup_logging()
     logger = logging.getLogger(__name__)
-    
-    logger.info("Starting DCS-BIOS MCP Server...")
-    
+
+    logger.info("Starting DCS MCP Server...")
+
     # Load configuration
     config = Config.load()
-    
+
     # Create and start MCP server
     server = MCPServer(config)
-    
+
     try:
         await server.start()
     except KeyboardInterrupt:
