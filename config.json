@@ -1,0 +1,26 @@
+{
+  "dcs_bios": {
+    "host": "239.255.50.10",
+    "port": 5010,
+    "multicast": true,
+    "tcp_host": "127.0.0.1",
+    "tcp_port": 7778
+  },
+  "mcp_server": {
+    "host": "127.0.0.1",
+    "port": 8080,
+    "enable_websocket": true
+  },
+  "aircraft_filter": [
+    "FA-18C_hornet",
+    "F-16C_50",
+    "A-10C",
+    "F-14",
+    "AH-64D"
+  ],
+  "data_update_rate": 10,
+  "logging": {
+    "level": "INFO",
+    "file": "logs/dcs_mcp_server.log"
+  }
+}
